@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"5994255" = {editable = true, path = "./../germs"}
+"6315764" = {path = "./../src", editable = true}
 
 [requires]
 python_version = "3.6"
