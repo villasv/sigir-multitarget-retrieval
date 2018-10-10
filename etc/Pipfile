@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"6315764" = {path = "./../src", editable = true}
+"109f4f9" = {editable = true, path = "./../lib"}
 
 [requires]
 python_version = "3.6"

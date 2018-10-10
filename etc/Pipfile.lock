@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ed8957154209e706f2e1e990351e8576dd209f751926b5ef063ffed07a9704aa"
+            "sha256": "d308f7e9f0c6b286835124f608dcfcd060325c2ca49c9182b7774b729f1691d8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,9 +16,9 @@
         ]
     },
     "default": {
-        "6315764": {
+        "109f4f9": {
             "editable": true,
-            "path": "./../src"
+            "path": "./../lib"
         },
         "numpy": {
             "hashes": [
