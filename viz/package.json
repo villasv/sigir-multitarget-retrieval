@@ -1,0 +1,41 @@
+{
+    "name": "d3-ranking",
+    "version": "0.0.1",
+    "description": "D3 plugin for graphical representations of ranked data.",
+    "keywords": [
+        "d3",
+        "d3-module",
+        "ranking"
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Victor Villas",
+        "email": "villasv@outlook.com",
+        "url": "http://villasv.github.io"
+    },
+    "main": "build/d3-ranking.js",
+    "jsnext:main": "index",
+    "homepage": "https://github.com/villasv/d3-ranking",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/villasv/d3-ranking.git"
+    },
+    "bugs": {
+        "url": "https://github.com/villasv/d3-ranking/issues"
+    },
+    "scripts": {
+        "build": "rollup -c ./rollup.config.js",
+        "test": "tape 'test/**/*-test.js'"
+    },
+    "devDependencies": {
+        "rollup-plugin-node-resolve": "^3.0.0",
+        "rollup-plugin-commonjs": "^8.2.6",
+        "rollup": "^0.53.3",
+        "tape": "^4.8.0"
+    },
+    "dependencies": {
+        "d3-array": "^1.2.1",
+        "d3-scale": "^1.0.7",
+        "d3-selection": "^1.2.0"
+    }
+}

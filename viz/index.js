@@ -1,0 +1,1 @@
+export {ranking} from "./src/d3-ranking";
