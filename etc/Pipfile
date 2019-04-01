@@ -5,8 +5,7 @@ name = "pypi"
 
 [packages]
 "109f4f9" = {editable = true, path = "./../lib"}
+dvc = "==0.33.1"
 
 [requires]
 python_version = "3.6"
-
-[dev-packages]
