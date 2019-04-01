@@ -1,0 +1,383 @@
+\documentclass[a4paper, 10pt, conference]{ieeeconf}
+\let\labelindent\relax
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+\title{\LARGE \bf Generalizing cumulative gain ranking metrics with an utility framework}
+
+\author{Victor Villas Bôas Chaves\thanks{V. Villas is with School of Applied
+Mathematics, Fundação Getúlio Vargas, Rio de Janeiro - RJ,
+Brazil}\\\small\href{mailto:mail@victor.villas}{mail@victor.villas}}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+The Normalized Discounted Cumulative Gain is the standard evaluation metric for
+a variety of IR tasks and it was introduced to reflect the cumulative gain of
+consuming ranked items. Despite its success in many applications, it was shown
+to have weaknesses arising from its very particular model of ranking utility.
+This work presents a more general framework for evaluating ranked data and
+provides justification for the properties observed in NDCG, along with concrete
+experiments where different utility models achieves better results.
+\end{abstract}
+
+
+\section{INTRODUCTION}
+Information Retrieval systems have been imbued with the responsibility of
+ranking query results by relevance - or probability of relevance as
+distinguished by \cite{Stephen1977} - as it is most often aligned with the users
+need to prioritize highly interesting results. Independent of retrieval system,
+search task or user need, results are always expected to be sorted to some
+degree \cite{Cooper1968}.
+
+The sorting component of retrieval systems has been a topic of discussion at
+least since \cite{Stephen1978}, when the contradicting nature between relevance
+as a multivalued dimension and a probabilistic view of relevance was
+highlighted. After the work of \cite{Jarvelin2002} with the definition of the
+Discounted Cumulated Gain\footnote{The word "cumulative" has been chosen over
+the original "cumulated" in more recent research. In the remaining occurrences
+in this text, the "cumulative" variant is adopted.}, it was possible to combine
+degrees of relevance and rank positions in a standardized metric family:
+
+\begin{equation}
+\label{eq:dcg}
+DCG@k/G/D = \sum_{i=1}^k G(l_i)D(i)
+\end{equation}
+\begin{equation}
+\label{eq:ndcg}
+NDCG@k/G/D = \frac{DCG@k/G/D}{\max DCG@k/G/D}
+\end{equation}
+
+where the functional hyper-parameters  control the emphasis of the metric,
+having $D$ for discount and $G$ for gain in terms of the each items index $i$
+and relevance degree $l_i$ respectively, and the integer hyper-parameter $k$
+allows the metric to focus only in the top results. The Normalized $DCG$ is
+found by dividing the $DCG$ of some ranking by its maximum $DCG$ (as if it was
+perfectly ordered).
+
+It is worth mentioning that the motivation behind equation \ref{eq:dcg} as
+explained in \cite{Jarvelin2002} is to model the cumulative gain the users
+achieve by sequentially consuming the ranking items down to position $k$. In a
+sense, this metric is the realization of the early suggestion presented in
+\cite{Stephen1978} to consider the cumulative utility provided by each result,
+just now free of the probabilistic framework.
+
+$NDCG$ has been consistently used in a variety of IR tasks and turned into a
+standard for Web Search evaluation, becoming an approximation objective of many
+surrogate loss functions shown to be good targets for Learning to Rank research
+\cite{Ravikumar2011}. In particular, linear  gain (or exponential like in
+\cite{Burges2005}) and logarithmic discount were established as the usual
+choices in the LTR field \cite{Liu2011}.
+
+%TODO: this is kind of OUTTA NOWHERE!!!
+However, it was later brought to attention in \cite{Wang2013} that the parameter
+$k$ behaves like a hard-cutoff discount. In order to preserve the property of
+converging in probability it should grow unbounded as a function of the ranking
+size $n$. The notion of distinguishable ranking functions and the importance of
+converging in probability was presented in \cite{Wang2013} in response to the
+discovery that:
+
+\begin{equation}
+\label{eq:ndcg_convergence}
+NDCG(f, S_n) \xrightarrow{a.s.} 1
+\end{equation}
+
+%TODO: does it really betrays, though? If no utility is negative, maximum utility always comes from the entire ranking, so it kinda makes sense
+for every ranking function $f$, assuming non-negative relevance degrees $S_n$
+drawn i.i.d from some fixed underlying distribution.\footnote{Whenever omitted,
+the parameters $k$, $G$ and $D$ can be assumed to be the ranking size $n$, a
+linear gain $G(l_i)=l_i$ and a logarithmic discount $D(i)=\log(1+i)$
+respectively. Following  \cite{Wang2013} and \cite{Liu2011}, we refer to this
+setting as the "standard" $NDCG$.} This result betrays the original motivation
+expressed in \cite{Jarvelin2002} to model the cumulated gain some user
+experiences as its hard to justify that for any real world scenario, the utility
+if consuming the whole ranking - no matter the ordering - converges to its
+maximum value. Moreover, the unbounded cutoff remark has been largely ignored in
+posterior literature and one can typically find experiments only dealing with $k
+\leq 10$ regardless of ranking size as in \cite{Wang2017}.
+
+On the practical side, \cite{Bellogin2017} has identified $NDCG$ (among other
+metrics) as a biased metric for recommender systems and its value range so much
+dependent on the evaluation data settings, regardless of the evaluated
+algorithm, that the measured values are not meaningful outside that particular
+experiment comparison scope. This became evident after a change in experimental
+settings, effectively changing how a recommender system aggregates utility. This
+methodology complements the search of special-purpose metrics proposed by
+\cite{Steck2011}.
+
+An example of recent effort to bring $NDCG$ closer to the reality of perception
+of ordering quality is presented in \cite{Katerenchuk2018}, along with an
+attempt to create a meaningful lower bound not present in the original
+proposition of cumulative gain based metrics in \cite{Jarvelin2002}. In
+\cite{Zhou2014} there's an effort to bring coherence to the ad-hoc nature of the
+gain function using linear utility models to analyze user preference data.
+\cite{Moniz2016} goes a step further and proposes a dataset-aware method to
+adjust the relevance dimension before passing through the exponential gain.
+
+Despite the positive results in experiments with $NDCG$ variations
+(\cite{Katerenchuk2018,Zhou2014,Moniz2016}), novel IR methods still focus on
+standard $NDCG$. For instance, after proposing the Grid-based User Browsing
+Model (GUBM), \cite{Xie2018} adheres to $NDCG@k$ and conjectures that no
+improvement is seen for larger $k$ because of click sparsity instead of
+questioning the validity of the metric itself.
+
+This work aims to retake the user utility goal suggested early in
+\cite{Stephen1978} and the intention behind $NDCG$ as a consumer-focused
+evaluation method in \cite{Jarvelin2002} by presenting a generalization of gain
+based metrics that, when appropriately specialized, yields better results in
+more diverse IR scenarios.
+
+\section{RANKING UTILITY FRAMEWORK}
+\label{sec:ranking}
+
+A possible criticism of the result expressed in equation
+\ref{eq:ndcg_convergence} is possible through the lens of economics: even though
+the relevance of a document might be positive for a given query, the gain from
+selecting it might be negligible or even negative considering the rest of the
+result set. This \textit{paradox of value}\footnote{Also known as the paradox of
+water and diamonds, it states the apparent contradiction that water is much more
+useful than diamonds yet it has much less exchange value, showing that
+usefulness and worth might not have a necessary relationship.} phenomenon can be
+attributed to the multifaceted nature of relevance as discussed in
+\cite{Mizzaro1998} and it introduces the need to discuss  marginal utility.
+
+The formulation proposed will stray from the focus on relevance and speak only
+of the general concept of utility. The term \textit{utility} carries less
+preconceptions and can safely be dissociated from the many meanings and
+assumptions about relevance. Additionally, because the overall goal of ranking
+metrics is to evaluate the ranking \textit{generation} and not the ranking
+\textit{consumption}, a distinction is made between the utility of the ranking
+and the utility of a particular outcome for the user consuming that ranking down
+to a specific position:
+
+\begin{equation}
+\label{eq:framework}
+\begin{aligned}
+U_o(R) =& \mathbb{E}\left[ U_s(R^K) \right]\\
+R^0 =& \emptyset\\
+R^k =& \{r_1, \cdots, r_k \} \preceq R
+\end{aligned}
+\end{equation}
+
+The Ordering Utility $U_o$ of a ranking $R$ is the expected Selection Utility
+$U_s$ of the top $k$ results $R^k$. It's also useful to formalize the concept of
+Marginal Utility:
+
+\begin{equation}
+\label{eq:marginal}
+MU(k) = U_s(R^k) - U_s(R^{k-1})
+\end{equation}
+
+It's not assumed that each isolated item has an intrinsic utility - usually
+taken as function of its relevance only. Instead, its characterization comes
+from the effect of its selection, so each ranking $R$ can yield different
+Marginal Utility values for the same item.
+
+Inverting the relationship between Selection Utility and Marginal Utility in
+equation \ref{eq:marginal} and assuming that $U_s(\emptyset) =0$, we can define
+Marginal Utility Cumulative Gain in a similar fashion to $DCG$:
+
+\begin{equation}
+\label{eq:mucg}
+MUCG@k = U_s(R^k) = \sum_{i=1}^k MU(k)
+\end{equation}
+
+Equation \ref{eq:mucg} is the most familiar since it closely matches the
+definition of gain based metrics. One wait to fit $DCG$ in this framework is to
+set $MU(i) = G(l_i)D(i)$, but also to hold the assumption of a probability
+distribution $P(K) = [K=k]$. By design, the metric measures the utility of
+consuming the ranking down to position $k$, so using it as  ranking evaluation
+assumes that users will consume the ranking only and always down to position
+$k$. One could also try to construct for $DCG$ a probabilistic $D$ function, but
+the exercise of taming $\sum_{i=1}^\infty 1/\log(1+i)$ into convergence yields a
+contrived $G$ function.
+
+As shown with $DCG$, in order to completely characterize an evaluation using
+this framework it requires the Selection Utility $U_s$ to be defined but also a
+probability distribution for the selection stopping index $K$. In the next
+section a concrete probabilistic approach is presented.
+
+
+\section{STOPPING DECISION PROCESS}
+\label{sec:stopping}
+
+One way to make equation \ref{eq:framework} concrete is to analyze the ranking
+consumption as a stopping problem, modeled as a Markov Chain with initial state
+and transition matrix:
+
+\begin{equation}
+\begin{aligned}
+\bf{x}_0 =& \left[0,1,0,0,0,\cdots,0\right] \in \mathbb{R}^{N+1}\\
+P_{i,j} =& \begin{cases}
+p_{i, 0} = \pi(i) = 1 - p_{i, i+1} &\text{if $0<i$}\\
+p_{i,j} = 0 &\text{elsewhere}
+\end{cases}
+\end{aligned}
+\end{equation}
+
+where the $i-th$ state represents the user at document $i$ in the (1-indexed)
+ranking and the $0-th$ state is the absorbing state representing the end of the
+consumption. We denote $\pi(i)$ the probability policy for interruption, where
+it's only required that $\pi(0) = \pi(N) = 1$.
+
+This model is quite simplistic in that it resembles a heavily constrained
+scenario like the Secretary Problem \ref{}. A more complete Markov Decision
+Process could account for more diverse user interactions, but the benefit of
+this model is the applicability of known stopping time theorems to create a
+meaningful performance baseline.
+
+If the ranking algorithm is completely random and we assume that the Decision
+Maker is following the optimal policy for its payoff $\varphi(x)$, we can
+evaluate the best a decision maker could do with no help from the search
+algorithm.
+
+
+\section{EXPERIMENTS}
+\label{sec:experiments}
+
+In section ?? it was shown that $DCG$ can be adapted as Selection Utility that
+has a very simple Marginal Utility model. In this section are presented
+retrieval scenarios where a more realistic view of relevance is required and
+Selection Utility itself is modeled directly:
+
+\begin{enumerate}
+\item Find at least 3 different respectable sources that agree with some statement for argument backing
+\item Select from 10 to 30 books that discuss a given topic for a prize nomination shortlist
+\item  Pick at most 50 \textit{résumés} from potential candidates to fulfill a job opening with matching job experience
+\end{enumerate}
+
+\subsection{Tailored Scenario}
+Let us consider the example scenario of finding agreeing sources with some
+controversial view using different web search engines $g$ and $b$. For
+illustration purposes, the following handcrafted\footnote{Derived from searching
+"why Oasis are actually better than the Beatles" on www.google.com and
+www.bing.com respectively. Relevances subjectively judged by how convincing each
+result would be as a source during an argument. Views don't necessarily reflect
+those of the authors.} rankings are given:
+
+\begin{equation}
+\label{eq:tailored}
+\begin{aligned}
+R_b = (3,1,0,0,1,1,0,0,0,0,...,0) \\
+R_g = (0,0,0,2,2,3,1,0,0,0,...,0) \\
+\end{aligned}
+\end{equation}
+
+\begin{table}
+\label{tb:tailored:rankings}
+\centering
+\caption{NDCG values for the tailored scenario}
+\begin{tabular}{l|l|l|l|l|l|l|}
+\cline{2-7}
+    & \multicolumn{6}{c|}{$D(i) = log_2(1 + i)$} \\
+\cline{2-7}
+    & \multicolumn{3}{c|}{$G(l_i) = l_i$} & \multicolumn{3}{c|}{$G(l_i) = 2^{l_i} - 1$}\\
+\cline{2-7}
+    & k = 3 & k = 5 & k = 10 & k = 3 & k = 5 & k = 10 \\
+\hline \multicolumn{1}{|l|}{$R_b$}
+    & 0.879 & 0.881 & 0.959 & 0.939 & 0.936 & 0.978 \\
+\hline \multicolumn{1}{|l|}{$R_g$}
+    & 0.000 & 0.287 & 0.534 & 0.000 & 0.227 & 0.488  \\
+\hline
+\end{tabular}
+\end{table}
+
+Table \ref{tb:tailored:rankings} contains the $NDCG$ evaluations using the most
+common parameters in Web Search, all of which consistently agreeing that ranking
+$R_b$ is better than ranking $R_g$. On the other hand, the most realistic
+conclusion is that for this very well defined IR task, $R_g$ performed equally
+well or better: the goal was to find 3 sources and they were respectively
+$2,2,3$ consuming 6 elements and $3,1,1$, consuming 5 elements.
+
+An example of Selection Utility for this task could simply ignore the order of
+the elements and consider the best 3 results, as well as discount the effort of
+consuming each item. We will refer to this approach as the Knapsack Utility
+model.
+
+\begin{equation}
+\label{eq:tailored:utility}
+U_s^A(R^n) = \max_{i<j<k<n}(l_i+l_j+l_k) - \alpha_e n
+\end{equation}
+
+The effort factor $\alpha_e$ can help us explore how different tolerance levels
+for irrelevant results affect the utility. Table \ref{tb:tailored:tuning} shows
+how this parameter affects the utility and the optimal selection stopping point.
+
+\begin{table}
+\label{tb:tailored:tuning}
+\centering
+\caption{Knapsack Utility values for different tolerance levels}
+\begin{tabular}{l|l|l|l|l|}
+\cline{2-5}
+    & $\alpha_e$ = 0.3 & $\alpha_e$ = 0.5 & $\alpha_e$ = 0.7 & $\alpha_e$ = 1.0 \\
+\hline \multicolumn{1}{|l|}{$R_b$}
+    & 3.5 at 5 & 3.2 at 2 & 2.6 at 2 & 2.0 at 2  \\
+\hline \multicolumn{1}{|l|}{$R_g$}
+    & 5.2 at 6 & 4.0 at 6 & 2.8 at 6 & 1.0 at 6  \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Generated Single Query}
+
+\subsection{Generated Multiple Queries}
+
+\section{CONCLUSIONS}
+
+Future work might take into account the risk of a user making a bad selection
+because it has no access to the marginal utility of selecting ranking items:
+depending on the Selection Utility function, missing the optimal stopping point
+might yield significantly worse results and stochastic view of the Ordering
+Utility might be necessary.
+
+\addtolength{\textheight}{-12cm}
+\section*{ACKNOWLEDGMENT}
+
+\begin{thebibliography}{99}
+\bibitem{Bellogin2017}
+Bellogín, A., Castells, P., Cantador, I. (2017). Statistical biases in Information Retrieval metrics for recommender systems. Information Retrieval Journal. https://doi.org/10.1007/s10791-017-9312-z
+\bibitem{Burges2005}
+Burges, C., Shaked, T., Renshaw, E., Lazier, A., Deeds, M., Hamilton, N., Hullender, G. (2005). Learning to rank using gradient descent. In Proceedings of the 22nd international conference on Machine learning - ICML ’05 (pp. 89–96). New York, New York, USA: ACM Press. https://doi.org/10.1145/1102351.1102363
+\bibitem{Cooper1968}
+Cooper, W. S. (1968). Expected search length: A single measure of retrieval effectiveness based on the weak ordering action of retrieval systems. American Documentation. http://doi.org/10.1002/asi.5090190108
+\bibitem{Jarvelin2002}
+Järvelin, K., Kekäläinen, J.
+Cumulated gain-based evaluation of IR techniques. ACM Transactions on Information Systems, 20(4), 422–446.
+\bibitem{Katerenchuk2018}
+Katerenchuk, D., Rosenberg, A. (2018). RankDCG: Rank-Ordering Evaluation Measure. Retrieved from http://arxiv.org/abs/1803.00719
+\bibitem{Liu2011}
+Liu, T.-Y. (2011). Learning to Rank for Information Retrieval. Berlin, Heidelberg: Springer Berlin Heidelberg. http://doi.org/10.1007/978-3-642-14267-3
+\bibitem{Mizzaro1998}
+Mizzaro, S. (1998). How many relevances in information retrieval? Interacting with Computers, 10(3), 303–320. https://doi.org/10.1016/S0953-5438(98)00012-5
+\bibitem{Moniz2016}
+Moniz, N., Torgo, L., Vinagre, J. (2016). Data-Driven Relevance Judgments for Ranking Evaluation. Retrieved from http://arxiv.org/abs/1612.06136
+\bibitem{Ravikumar2011}
+Ravikumar, Pradeep, Tewari, Ambuj, Y. E. (2011). On NDCG consistency of listwise ranking methods. In Proceedings of the 31st Annual International ACM SIGIR Conference on Research and Development in Information Retrieval.
+\bibitem{Steck2011}
+Steck, H. (2011). Item popularity and recommendation accuracy. In Proceedings of the fifth ACM conference on Recommender systems - RecSys ’11 (p. 125). New York, New York, USA: ACM Press. https://doi.org/10.1145/2043932.2043957
+\bibitem{Stephen1977}
+Robertson, Stephen. (1977). The Probability Ranking Principle in IR. Journal of Documentation. 33. 294-304. 10.1108/eb026647.
+\bibitem{Stephen1978}
+Robertson, Stephen, Belkin, Nicholas. (1978). Ranking in Principle. Journal of Documentation - J DOC. 34. 93-100. 10.1108/eb026654.
+\bibitem{Wang2013}
+Wang, Y., Wang, L., Li, Y., He, D., Liu, T.-Y., Chen, W. (2013). A Theoretical Analysis of NDCG Type Ranking Measures. Retrieved from http://arxiv.org/abs/1304.6480
+\bibitem{Wang2017}
+Wang, J., Yu, L., Zhang, W., Gong, Y., Xu, Y., Wang, B., … Zhang, D. (2017). IRGAN: A Minimax Game for Unifying Generative and Discriminative Information Retrieval Models, 10. https://doi.org/10.475/123
+\bibitem{Xie2018}
+Xie, X., Mao, J., de Rijke, M., Zhang, R., Zhang, M., Ma, S. (2018). Constructing an Interaction Behavior Model for Web Image Search. Retrieved from http://arxiv.org/abs/1805.02811
+\bibitem{Zhou2014}
+Zhou, K., Zha, H., Chang, Y., Xue, G. R. (2014). Learning the gain values and discount factors of discounted cumulative gains. IEEE Transactions on Knowledge and Data Engineering, 26(2), 391–404. https://doi.org/10.1109/TKDE.2012.252
+\end{thebibliography}
+\end{document}
