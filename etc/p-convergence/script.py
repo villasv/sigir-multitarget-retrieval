@@ -17,23 +17,22 @@ class Metric:
 
 
 class PatK(Metric):
-    def __init__(self, k, ylim):
-        self._k = k
+    def __init__(self, ylim, k=None):
         self._ylim = ylim
+        self._k = k
 
     def _eval(self, r):
         r = np.asfarray(r)
-        if r.size < self._k:
-            _log.warning("Metric expected more points than provided")
-
-        rk = r[:self._k]
-        return np.sum(rk >= self._ylim) / self._k
+        k = self._k if self._k is not None else r.size
+        rk = r[:k]
+        return np.sum(rk >= self._ylim) / k
 
 
 random.seed(42)
-patk_05 = PatK(k=5, ylim=5)
-patk_10 = PatK(k=10, ylim=5)
-patk_50 = PatK(k=50, ylim=5)
+patk_nn = PatK(ylim=5)
+patk_05 = PatK(ylim=5, k=5)
+patk_15 = PatK(ylim=5, k=15)
+patk_50 = PatK(ylim=5, k=50)
 
 
 def gen_ranking(n):
@@ -46,8 +45,8 @@ def main():
     rankings = [gen_ranking(n) for n in linspace for _ in range(sampling)]
 
     df = pd.DataFrame(
+        [[r.size, '=N', patk_nn(r)] for r in rankings] +
         [[r.size, '05', patk_05(r)] for r in rankings] +
-        [[r.size, '10', patk_10(r)] for r in rankings] +
         [[r.size, '50', patk_50(r)] for r in rankings],
         columns=['N', 'k', 'P at k']
     )
