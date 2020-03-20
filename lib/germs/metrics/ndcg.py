@@ -8,6 +8,7 @@ from germs.metrics.base import Metric as _BaseMetric
 class DCG(_BaseMetric):
     """
     """
+
     def __init__(self, k=None, G=_f.identity, D=_f.p1log2):
         self._k = k
         self._G = G
@@ -26,6 +27,7 @@ class DCG(_BaseMetric):
 class NDCG(_BaseMetric):
     """
     """
+
     def __init__(self, k=None, G=_f.identity, D=_f.p1log2):
         self._dcg = DCG(k, G, D)
 

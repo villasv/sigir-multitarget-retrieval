@@ -41,16 +41,18 @@ def gen_ranking(n):
 
 def main():
     sampling = 100
-    linspace = [int(i) for i in np.rint(np.linspace(10**2, 10**4, num=100))]
+    linspace = [int(i) for i in np.rint(np.linspace(10 ** 2, 10 ** 4, num=100))]
     rankings = [gen_ranking(n) for n in linspace for _ in range(sampling)]
 
     df = pd.DataFrame(
-        [[r.size, '=N', patk_nn(r)] for r in rankings] +
-        [[r.size, '05', patk_05(r)] for r in rankings] +
-        [[r.size, '50', patk_50(r)] for r in rankings],
-        columns=['N', 'k', 'P at k']
+        [[r.size, "=N", patk_nn(r)] for r in rankings]
+        + [[r.size, "05", patk_05(r)] for r in rankings]
+        + [[r.size, "50", patk_50(r)] for r in rankings],
+        columns=["N", "k", "P at k"],
     )
-    sns.lineplot(x='N', y='P at k', hue='k', ci='sd', data=df).get_figure().savefig('patk.png')
+    sns.lineplot(
+        x="$N$", y="$P@k$", hue="k", ci="sd", data=df,
+    ).get_figure().savefig("patk.png")
     return df
 
 

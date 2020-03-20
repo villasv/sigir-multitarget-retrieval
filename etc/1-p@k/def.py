@@ -1,4 +1,3 @@
-
 class PatK(Metric):
     def __init__(self, ylim, k=None):
         self._ylim = ylim

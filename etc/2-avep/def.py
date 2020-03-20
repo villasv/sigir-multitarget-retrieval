@@ -1,4 +1,3 @@
-
 class AveP(Metric):
     def __init__(self, ylim, k=None):
         self._ylim = ylim
@@ -15,5 +14,5 @@ class AveP(Metric):
         patks = 0
         for i in range(k):
             if rk[i] >= self._ylim:
-                patks += PatK(self._ylim, i+1)(rk)
+                patks += PatK(self._ylim, i + 1)(rk)
         return patks / n_pos

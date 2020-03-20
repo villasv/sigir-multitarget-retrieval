@@ -1,4 +1,3 @@
-
 class DCG(Metric):
     def __init__(self, k=None, G=identity, D=p1log2):
         self._k = k
@@ -9,7 +8,7 @@ class DCG(Metric):
         r = np.asfarray(r)
         k = self._k if self._k is not None else r.size
         rk = r[:k]
-        return np.sum(self._G(rk) / self._D(np.arange(1, k+1)))
+        return np.sum(self._G(rk) / self._D(np.arange(1, k + 1)))
 
 
 class NDCG(Metric):
