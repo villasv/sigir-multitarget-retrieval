@@ -1,10 +1,12 @@
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from tqdm import tqdm
 
-g = {"TOTAL": 0, "DONES": 0}
+pbar = None
 
 
 def identity(v):
@@ -52,8 +54,7 @@ class RDCG(Metric):
         min_dcg = self._dcg(sorted(r))
         a = self._dcg(r) - min_dcg
         b = max_dcg - min_dcg
-        g["DONES"] += 1
-        print(f"{g['DONES']}/{g['TOTAL']}")
+        pbar.update(1)
         return a / b if b > 0 else 0
 
 
@@ -68,23 +69,45 @@ def gen_ranking(n):
 
 
 def main():
+    global pbar
+
+    # experiment 1
     sampling = 100
     linspace = np.linspace(10 ** 2, 10 ** 4, num=100)
     ranksize = [int(i) for i in np.rint(linspace)]
     rankings = [gen_ranking(n) for n in ranksize for _ in range(sampling)]
-    g["TOTAL"] = len(rankings) * 3
-    print(g["TOTAL"])
 
+    pbar = tqdm(total=len(rankings) * 3)
     df = pd.DataFrame(
-        [[r.size, "=N", rdcg_nn(r)] for r in rankings]
+        [[r.size, "N", rdcg_nn(r)] for r in rankings]
         + [[r.size, "05", rdcg_05(r)] for r in rankings]
         + [[r.size, "50", rdcg_50(r)] for r in rankings],
-        columns=["N", "k", "RDCG@k"],
+        columns=["$N$", "$k$", "$RDCG@k$"],
     )
     sns.lineplot(
-        x="N", y="RDCG@k", hue="k", ci="sd", data=df
-    ).get_figure().savefig("rdcg.png")
+        x="$N$", y="$RDCG@k$", hue="$k$", ci="sd", data=df
+    ).get_figure().savefig("rdcg1.png")
+    pbar.close()
 
+    plt.clf()
+
+    # experiment 2
+    sampling = 100
+    linspace = np.linspace(10 ** 2, 10 ** 5, num=100)
+    ranksize = [int(i) for i in np.rint(linspace)]
+    rankings = [gen_ranking(n) for n in ranksize for _ in range(sampling)]
+
+    pbar = tqdm(total=len(rankings) * 3)
+    df = pd.DataFrame(
+        [[r.size, "N", rdcg_nn(r)] for r in rankings]
+        + [[r.size, "05", rdcg_05(r)] for r in rankings]
+        + [[r.size, "50", rdcg_50(r)] for r in rankings],
+        columns=["$N$", "$k$", "$RDCG@k$"],
+    )
+    sns.lineplot(
+        x="$N$", y="$RDCG@k$", hue="$k$", ci="sd", data=df
+    ).get_figure().savefig("rdcg2.png")
+    pbar.close()
 
 if __name__ == "__main__":
     main()

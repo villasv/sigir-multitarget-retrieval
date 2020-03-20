@@ -45,15 +45,14 @@ def main():
     rankings = [gen_ranking(n) for n in linspace for _ in range(sampling)]
 
     df = pd.DataFrame(
-        [[r.size, "=N", patk_nn(r)] for r in rankings]
+        [[r.size, "N", patk_nn(r)] for r in rankings]
         + [[r.size, "05", patk_05(r)] for r in rankings]
         + [[r.size, "50", patk_50(r)] for r in rankings],
-        columns=["N", "k", "P at k"],
+        columns=["$N$", "$k$", "$P@k$"],
     )
     sns.lineplot(
-        x="$N$", y="$P@k$", hue="k", ci="sd", data=df,
+        x="$N$", y="$P@k$", hue="$k$", ci="sd", data=df,
     ).get_figure().savefig("patk.png")
-    return df
 
 
 if __name__ == "__main__":

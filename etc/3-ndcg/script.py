@@ -67,13 +67,13 @@ def main():
     rankings = [gen_ranking(n) for n in ranksize for _ in range(sampling)]
 
     df = pd.DataFrame(
-        [[r.size, "=N", ndcg_nn(r)] for r in rankings]
+        [[r.size, "N", ndcg_nn(r)] for r in rankings]
         + [[r.size, "05", ndcg_05(r)] for r in rankings]
         + [[r.size, "50", ndcg_50(r)] for r in rankings],
-        columns=["N", "k", "NDCG@k"],
+        columns=["$N$", "$k$", "$NDCG@k$"],
     )
     sns.lineplot(
-        x="N", y="NDCG@k", hue="k", ci="sd", data=df
+        x="$N$", y="$NDCG@k$", hue="$k$", ci="sd", data=df
     ).get_figure().savefig("ndcg.png")
 
 

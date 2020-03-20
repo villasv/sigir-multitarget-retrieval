@@ -64,16 +64,14 @@ def main():
     rankings = [gen_ranking(n) for n in linspace for _ in range(sampling)]
 
     df = pd.DataFrame(
-        [[r.size, "=N", avep_nn(r)] for r in rankings]
+        [[r.size, "N", avep_nn(r)] for r in rankings]
         + [[r.size, "10", avep_05(r)] for r in rankings]
         + [[r.size, "50", avep_50(r)] for r in rankings],
-        columns=["N", "k", "barP"],
+        columns=["$N$", "$k$", r"$\bar{P}@k$"],
     )
     sns.lineplot(
-        x="N", y="barP", hue="k", ci="sd", data=df
-    ).get_figure().savefig("barp.png")
-    print(df)
-    return df
+        x="$N$", y=r"$\bar{P}@k$", hue="$k$", ci="sd", data=df
+    ).get_figure().savefig("avep.png")
 
 
 if __name__ == "__main__":
